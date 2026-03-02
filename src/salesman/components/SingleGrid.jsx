@@ -135,7 +135,7 @@ export default function SingleGrid({ candies=[], onSelect, mobile }) {
             >
               <div style={{ height:imgH, position:"relative", background:"var(--bg5)" }}>
                 {c.image
-                  ? <img src={`${BASE}${c.image}`} alt={c.name} loading="lazy" style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
+                  ? <img src={c.image?.startsWith('data:') ? c.image : `${BASE}${c.image}`} alt={c.name} loading="lazy" style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
                   : <div style={{ height:"100%", display:"flex", alignItems:"center", justifyContent:"center", color:"var(--cream0)", fontSize:10 }}>No Image</div>
                 }
                 <div style={{ position:"absolute", top:4, left:4, background:"rgba(0,0,0,.78)", color:"var(--gold3)", padding:"2px 6px", borderRadius:5, fontSize:10, fontWeight:700 }}>

@@ -174,7 +174,7 @@ export default function Candies() {
               {/* Image */}
               <div style={{ position:"relative", width:"100%", paddingTop:"75%", background:"var(--bg5)", flexShrink:0 }}>
                 {c.image
-                  ? <img src={`${BASE_URL}${c.image}`} alt={c.name} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
+                  ? <img src={c.image?.startsWith('data:') ? c.image : `${BASE_URL}${c.image}`} alt={c.name} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
                   : <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", color:"var(--cream0)", fontSize:11 }}>No Image</div>
                 }
                 {!isEditing && (
