@@ -118,7 +118,7 @@ export default function CandyListManage() {
                     <div key={item.id} style={styles.card}>
                         {item.image && (
                             <img
-                                src={`${BASE_URL}${item.image}`}
+                                src={item.image?.startsWith("data:") ? item.image : `${BASE_URL}${item.image}`}
                                 alt={item.name}
                                 style={styles.image}
                             />
