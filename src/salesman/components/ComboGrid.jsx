@@ -57,12 +57,12 @@ export default function ComboGrid({ candies=[], offers=[], selected=[], onChange
     return s;
   }, [offers]);
 
-  // Filter + sort by price asc, then name
+  // Filter + sort by price asc, then code asc (MC1, MC2... order)
   const list = candies
     .filter(c => validPrices.size > 0 ? validPrices.has(Number(c.price)) : Number(c.price) <= 100)
     .sort((a, b) => Number(a.price) !== Number(b.price)
       ? Number(a.price) - Number(b.price)
-      : a.name.localeCompare(b.name)
+      : (a.code || '').localeCompare(b.code || '', undefined, { numeric: true })
     );
 
   // Group by price → each price group = its own rows, max 3 per row
