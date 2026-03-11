@@ -33,7 +33,7 @@ export default function SalesmanApp() {
 
   const { config, candies, reloadCandies, loading } = useSalesmanConfig(stallId);
 
-  const [tab,              setTab]              = useState("SINGLE");
+  const [tab,              setTab]              = useState(null);
   const [singleKey,        setSingleKey]        = useState(0);
   const [cart,             setCart]             = useState([]);
   const [comboBuffer,      setComboBuffer]      = useState([]);
@@ -285,7 +285,7 @@ export default function SalesmanApp() {
         visible={showComboPopup}
         comboSizes={comboSizes}
         onSelect={size => { setSelectedComboSize(Number(size)); setComboBuffer([]); setShowComboPopup(false); }}
-        onCancel={() => { setShowComboPopup(false); setTab("SINGLE"); }}
+        onCancel={() => { setShowComboPopup(false); setTab(null); }}
       />
 
       {/* ── PROFILE ── */}
