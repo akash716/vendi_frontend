@@ -224,7 +224,7 @@ export default function SalesmanApp() {
             else if (t==="BIG_COMBO") { setSelectedComboSize(BIG_COMBO_SIZE); setComboBuffer([]); setTab("BIG_COMBO"); }
             else { setSelectedComboSize(null); setComboBuffer([]); setTab("SINGLE"); setSingleKey(k=>k+1); }
           }}/>
-          {tab==="SINGLE" && <SingleGrid key={singleKey} candies={candies} onSelect={handleSingleSelect} mobile />}
+          {tab==="SINGLE" && <SingleGrid key={singleKey} candies={candies} onSelect={handleSingleSelect} onCancel={() => setTab(null)} mobile />}
           {tab==="COMBO" && selectedComboSize && <ComboGrid candies={candies} offers={smallComboOffers} selected={comboBuffer} onChange={updateCombo} mobile />}
           {tab==="BIG_COMBO" && <BigComboGrid candies={candies} offers={bigComboOffers} selected={comboBuffer} onChange={updateCombo} mobile />}
         </div>
@@ -237,7 +237,7 @@ export default function SalesmanApp() {
               else if (t==="BIG_COMBO") { setSelectedComboSize(BIG_COMBO_SIZE); setComboBuffer([]); setTab("BIG_COMBO"); }
               else { setSelectedComboSize(null); setComboBuffer([]); setTab("SINGLE"); setSingleKey(k=>k+1); }
             }}/>
-            {tab==="SINGLE" && <SingleGrid key={singleKey} candies={candies} onSelect={handleSingleSelect} />}
+            {tab==="SINGLE" && <SingleGrid key={singleKey} candies={candies} onSelect={handleSingleSelect} onCancel={() => setTab(null)} />}
             {tab==="COMBO" && selectedComboSize && <ComboGrid candies={candies} offers={smallComboOffers} selected={comboBuffer} onChange={updateCombo} />}
             {tab==="BIG_COMBO" && <BigComboGrid candies={candies} offers={bigComboOffers} selected={comboBuffer} onChange={updateCombo} />}
           </div>

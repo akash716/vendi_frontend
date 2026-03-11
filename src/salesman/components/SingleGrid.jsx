@@ -12,7 +12,7 @@ const CAT_PALETTES = [
   { bg:"rgba(224,80,64,.1)",   border:"var(--red)",     text:"var(--red)",     dot:"var(--red)"   },
 ];
 
-export default function SingleGrid({ candies=[], onSelect, mobile }) {
+export default function SingleGrid({ candies=[], onSelect, onCancel, mobile }) {
   const [selectedCat, setSelectedCat] = useState(null);
 
   const categories = useMemo(() => {
@@ -39,12 +39,19 @@ export default function SingleGrid({ candies=[], onSelect, mobile }) {
   /* ── Category picker popup ── */
   if (!selectedCat) return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.78)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:500, padding:16 }}>
-      <div style={{ background:"var(--bg3)", border:"1px solid var(--border2)", borderRadius:20, padding: mobile ? "22px 16px" : "28px 24px", width:"100%", maxWidth:380, boxShadow:"0 30px 80px rgba(0,0,0,.6)" }}>
+      <div style={{ background:"var(--bg3)", border:"1px solid var(--border2)", borderRadius:20, padding: mobile ? "22px 16px" : "28px 24px", width:"100%", maxWidth:380, boxShadow:"0 30px 80px rgba(0,0,0,.6)", position:"relative" }}>
         <div style={{ textAlign:"center", marginBottom:20 }}>
           <div style={{ fontSize:34, marginBottom:8 }}>🍫</div>
           <h3 style={{ margin:"0 0 5px", fontSize: mobile ? "1.15rem" : "1.3rem" }}>Select Category</h3>
           <p style={{ fontSize:12, color:"var(--cream1)", margin:0 }}>Which chocolate would you like?</p>
         </div>
+        {onCancel && (
+          <button onClick={onCancel} style={{
+            position:"absolute", top:14, right:14,
+            background:"transparent", border:"none", color:"var(--cream1)",
+            fontSize:20, cursor:"pointer", lineHeight:1, padding:"2px 6px",
+          }}>✕</button>
+        )}
 
         <div style={{ display:"flex", flexDirection:"column", gap:9 }}>
           {categories.map((cat, idx) => {
