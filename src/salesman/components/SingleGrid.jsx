@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import API_URL from "../../config";
+import useCandyImage from "../hooks/useCandyImage";
 
 const BASE = API_URL;
 
@@ -11,6 +12,47 @@ const CAT_PALETTES = [
   { bg:"rgba(224,176,80,.1)",  border:"var(--gold3)",   text:"var(--gold4)",   dot:"var(--gold3)" },
   { bg:"rgba(224,80,64,.1)",   border:"var(--red)",     text:"var(--red)",     dot:"var(--red)"   },
 ];
+
+// Separate component so hook rules are followed (hooks per component, not in .map())
+function CandyCardSingle({ c, onSelect, mobile, imgH }) {
+  const outOfStock = (c.stock ?? 0) <= 0;
+  const image = useCandyImage(c.id);
+
+  return (
+    <div onClick={() => !outOfStock && onSelect({...c})} style={{
+      borderRadius: mobile ? 12 : 16, overflow:"hidden",
+      background:"var(--bg3)", border:"1px solid var(--border1)",
+      cursor: outOfStock ? "not-allowed" : "pointer",
+      opacity: outOfStock ? 0.38 : 1,
+      transition:"transform .15s, box-shadow .15s",
+      boxShadow:"0 2px 8px rgba(0,0,0,.25)",
+      WebkitTapHighlightColor:"transparent",
+    }}
+    onTouchStart={e => { if(!outOfStock) e.currentTarget.style.transform="scale(.96)"; }}
+    onTouchEnd={e => { e.currentTarget.style.transform=""; }}
+    onMouseEnter={e => { if(!outOfStock) e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 6px 18px rgba(0,0,0,.4)"; }}
+    onMouseLeave={e => { e.currentTarget.style.transform=""; e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,.25)"; }}
+    >
+      <div style={{ height:imgH, position:"relative", background:"var(--bg5)" }}>
+        {image
+          ? <img src={image?.startsWith('data:') ? image : `${BASE}${image}`} alt={c.name} loading="lazy" style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
+          : <div style={{ height:"100%", display:"flex", alignItems:"center", justifyContent:"center", color:"var(--cream0)", fontSize:10 }}>No Image</div>
+        }
+        <div style={{ position:"absolute", top:4, left:4, background:"rgba(0,0,0,.78)", color:"var(--gold3)", padding:"2px 6px", borderRadius:5, fontSize:10, fontWeight:700 }}>
+          ₹{Number(c.price).toFixed(0)}
+        </div>
+        <div style={{ position:"absolute", top:4, right:4, background: outOfStock?"var(--red-bg)":"var(--green-bg)", color: outOfStock?"var(--red)":"var(--green)", padding:"2px 6px", borderRadius:5, fontSize:9, fontWeight:600, border:`1px solid ${outOfStock?"var(--red-border)":"var(--green-border)"}` }}>
+          {outOfStock ? "OUT" : c.stock}
+        </div>
+      </div>
+      <div style={{ padding: mobile ? "5px 6px 8px" : "8px 10px 10px", textAlign:"center" }}>
+        <div style={{ fontWeight:700, fontSize: mobile ? 11 : 13, color:"var(--cream4)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+          {c.name}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function SingleGrid({ candies=[], onSelect, onCancel, mobile }) {
   const [selectedCat, setSelectedCat] = useState(null);
@@ -52,7 +94,6 @@ export default function SingleGrid({ candies=[], onSelect, onCancel, mobile }) {
             fontSize:20, cursor:"pointer", lineHeight:1, padding:"2px 6px",
           }}>✕</button>
         )}
-
         <div style={{ display:"flex", flexDirection:"column", gap:9 }}>
           {categories.map((cat, idx) => {
             const pal = CAT_PALETTES[idx % CAT_PALETTES.length];
@@ -87,14 +128,12 @@ export default function SingleGrid({ candies=[], onSelect, onCancel, mobile }) {
   /* ── Candy grid ── */
   const catIdx = categories.indexOf(selectedCat);
   const pal = CAT_PALETTES[catIdx % CAT_PALETTES.length];
-  // Desktop: 4 cards per row max, consistent size. Cap grid width.
   const cols = mobile ? "repeat(3, 1fr)" : "repeat(4, 1fr)";
   const imgH = mobile ? 95 : 120;
   const maxW = mobile ? "100%" : 680;
 
   return (
     <div style={{ maxWidth: maxW }}>
-      {/* Sub-header */}
       <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12, flexWrap:"wrap" }}>
         <button onClick={() => setSelectedCat(null)} style={{
           padding: mobile ? "5px 10px" : "6px 12px", borderRadius:20,
@@ -105,8 +144,6 @@ export default function SingleGrid({ candies=[], onSelect, onCancel, mobile }) {
           {selectedCat}
         </span>
         <span style={{ fontSize:11, color:"var(--cream1)" }}>{filtered.length} items</span>
-
-        {/* Other category chips — hide some on mobile */}
         {!mobile && categories.filter(c=>c!==selectedCat).map((cat,i) => {
           const ap = CAT_PALETTES[categories.indexOf(cat) % CAT_PALETTES.length];
           return (
@@ -119,47 +156,10 @@ export default function SingleGrid({ candies=[], onSelect, onCancel, mobile }) {
         })}
       </div>
 
-      {/* Cards */}
       <div style={{ display:"grid", gridTemplateColumns:cols, gap: mobile ? 8 : 12 }}>
-        {filtered.map(c => {
-          const outOfStock = (c.stock ?? 0) <= 0;
-          return (
-            <div key={c.id} onClick={() => !outOfStock && onSelect({...c})} style={{
-              borderRadius: mobile ? 12 : 16, overflow:"hidden",
-              background:"var(--bg3)", border:"1px solid var(--border1)",
-              cursor: outOfStock ? "not-allowed" : "pointer",
-              opacity: outOfStock ? 0.38 : 1,
-              transition:"transform .15s, box-shadow .15s",
-              boxShadow:"0 2px 8px rgba(0,0,0,.25)",
-              WebkitTapHighlightColor:"transparent",
-              // touch feedback
-              activeStyle:{ transform:"scale(.97)" },
-            }}
-            onTouchStart={e => { if(!outOfStock) e.currentTarget.style.transform="scale(.96)"; }}
-            onTouchEnd={e => { e.currentTarget.style.transform=""; }}
-            onMouseEnter={e => { if(!outOfStock) e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 6px 18px rgba(0,0,0,.4)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform=""; e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,.25)"; }}
-            >
-              <div style={{ height:imgH, position:"relative", background:"var(--bg5)" }}>
-                {c.image
-                  ? <img src={c.image?.startsWith('data:') ? c.image : `${BASE}${c.image}`} alt={c.name} loading="lazy" style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
-                  : <div style={{ height:"100%", display:"flex", alignItems:"center", justifyContent:"center", color:"var(--cream0)", fontSize:10 }}>No Image</div>
-                }
-                <div style={{ position:"absolute", top:4, left:4, background:"rgba(0,0,0,.78)", color:"var(--gold3)", padding:"2px 6px", borderRadius:5, fontSize:10, fontWeight:700 }}>
-                  ₹{Number(c.price).toFixed(0)}
-                </div>
-                <div style={{ position:"absolute", top:4, right:4, background: outOfStock?"var(--red-bg)":"var(--green-bg)", color: outOfStock?"var(--red)":"var(--green)", padding:"2px 6px", borderRadius:5, fontSize:9, fontWeight:600, border:`1px solid ${outOfStock?"var(--red-border)":"var(--green-border)"}` }}>
-                  {outOfStock ? "OUT" : c.stock}
-                </div>
-              </div>
-              <div style={{ padding: mobile ? "5px 6px 8px" : "8px 10px 10px", textAlign:"center" }}>
-                <div style={{ fontWeight:700, fontSize: mobile ? 11 : 13, color:"var(--cream4)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
-                  {c.name}
-                </div>
-              </div>
-            </div>
-          );
-        })}
+        {filtered.map(c => (
+          <CandyCardSingle key={c.id} c={c} onSelect={onSelect} mobile={mobile} imgH={imgH} />
+        ))}
       </div>
     </div>
   );
