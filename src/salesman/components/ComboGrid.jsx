@@ -4,6 +4,8 @@ const ID_ORDER = [1, 2, 3, 4, 5, 6, 7, 8];
 
 function sortByFixedOrder(list) {
   return [...list].sort((a, b) => {
+    const priceDiff = Number(a.price) - Number(b.price);
+    if (priceDiff !== 0) return priceDiff;
     const ai = ID_ORDER.indexOf(Number(a.id));
     const bi = ID_ORDER.indexOf(Number(b.id));
     if (ai === -1 && bi === -1) return Number(a.id) - Number(b.id);
@@ -31,7 +33,6 @@ export function CandyCard({ c, qty, onChange, mobile }) {
         transition: "border-color .15s, box-shadow .15s",
       }}
     >
-      {/* Clickable image = ADD */}
       <div
         onClick={() => !outOfStock && onChange(c, "ADD")}
         style={{
@@ -143,7 +144,7 @@ export function CandyCard({ c, qty, onChange, mobile }) {
         {c.name}
       </div>
 
-      {/* Minus — only when qty > 0 */}
+      {/* Minus */}
       <div
         style={{
           display: "flex",
@@ -205,7 +206,7 @@ export default function ComboGrid({ candies = [], offers = [], selected = [], on
         : Number(c.price) <= 100
     )
   );
-console.log("after sort:", list.map(c => c.id + " " + c.name));
+
   const countOf = (id) => selected.filter((c) => c.id === id).length;
   const gap = mobile ? 8 : 12;
 
