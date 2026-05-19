@@ -4,14 +4,19 @@ import useCandyImage from "../hooks/useCandyImage";
 
 const BASE = API_URL;
 
-// Sort by price first (asc), then by id (asc)
-// ₹65 wale pehle: id1,2,3,4,5 → Row1+Row2
-// ₹80 wale baad: id6,7,8 → Row3
+// Hardcoded order by DB id:
+// Row 1: id1, id2, id3  (₹65 milk)
+// Row 2: id4, id5       (₹65 dark)
+// Row 3: id6, id7, id8  (₹80 dark)
+const ID_ORDER = [1, 2, 3, 4, 5, 6, 7, 8];
 function sortByFixedOrder(list) {
   return [...list].sort((a, b) => {
-    const priceDiff = Number(a.price) - Number(b.price);
-    if (priceDiff !== 0) return priceDiff;
-    return a.id - b.id;
+    const ai = ID_ORDER.indexOf(Number(a.id));
+    const bi = ID_ORDER.indexOf(Number(b.id));
+    if (ai === -1 && bi === -1) return Number(a.id) - Number(b.id);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
   });
 }
 
