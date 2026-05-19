@@ -4,22 +4,9 @@ import useCandyImage from "../hooks/useCandyImage";
 
 const BASE = API_URL;
 
-// Fixed display order — matched by code
-const COMBO_ORDER = [
-  "MC1","MC2","MC3",      // Row 1: Creamy Milk, Crunchy Almond, Zesty Orange
-  "DC1","DC2",            // Row 2: 65% Dark, 70% Dark Zesty Orange
-  "DC3","DC4","DC5",      // Row 3: 72% No Sugar, 72% Almond Raisin, 85% Dark
-];
-
+// Sort by sort_order field from DB
 function sortByFixedOrder(list) {
-  return [...list].sort((a, b) => {
-    const ai = COMBO_ORDER.indexOf(a.code);
-    const bi = COMBO_ORDER.indexOf(b.code);
-    if (ai === -1 && bi === -1) return 0;
-    if (ai === -1) return 1;
-    if (bi === -1) return -1;
-    return ai - bi;
-  });
+  return [...list].sort((a, b) => (a.sort_order ?? 99) - (b.sort_order ?? 99));
 }
 
 /* ── Candy Card ── */
@@ -122,14 +109,17 @@ export function CandyCard({ c, qty, onChange, mobile }) {
               position: "absolute",
               bottom: 5, right: 5,
               background: "var(--gold2)",
-              color: "var(--bg0)",
-              width: 22, height: 22,
+              color: "#000",
+              width: mobile ? 26 : 30, height: mobile ? 26 : 30,
               borderRadius: "50%",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontWeight: 800,
-              fontSize: 13,
+              fontWeight: 900,
+              fontSize: mobile ? 14 : 16,
+              boxShadow: "0 0 0 3px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.5)",
+              border: "2px solid rgba(255,255,255,.9)",
+              zIndex: 2,
             }}
           >
             {qty}
@@ -241,7 +231,7 @@ export default function ComboGrid({ candies = [], offers = [], selected = [], on
               textAlign: "center",
               padding: "40px 0",
               color: "var(--cream0)",
-              fontSize: 13,
+              fontSize: mobile ? 14 : 16,
             }}
           >
             No candies available for combos.
