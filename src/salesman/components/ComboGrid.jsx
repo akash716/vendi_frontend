@@ -1,14 +1,11 @@
 import React from "react";
-import API_URL from "../../config";
-import useCandyImage from "../hooks/useCandyImage";
-
-const BASE = API_URL;
 
 // Hardcoded order by DB id:
-// Row 1: id1, id2, id3  (₹65 milk)
-// Row 2: id4, id5       (₹65 dark)
-// Row 3: id6, id7, id8  (₹80 dark)
+// Row 1: id1, id2, id3  → Creamy Milk, Crunchy Almond, Zesty Orange (₹65)
+// Row 2: id4, id5       → 65% Dark, 70% Dark Zesty (₹65)
+// Row 3: id6, id7, id8  → 72% No Sugar, 72% Almond Raisin, 85% Dark (₹80)
 const ID_ORDER = [1, 2, 3, 4, 5, 6, 7, 8];
+
 function sortByFixedOrder(list) {
   return [...list].sort((a, b) => {
     const ai = ID_ORDER.indexOf(Number(a.id));
@@ -25,7 +22,6 @@ export function CandyCard({ c, qty, onChange, mobile }) {
   const outOfStock = (c.stock ?? 0) <= 0;
   const imgH     = mobile ? 100 : 130;
   const fontSize = mobile ? 12 : 14;
-  const image    = useCandyImage(c.id);
 
   return (
     <div
@@ -54,13 +50,9 @@ export function CandyCard({ c, qty, onChange, mobile }) {
         onMouseEnter={(e) => { if (!outOfStock) e.currentTarget.style.opacity = ".85"; }}
         onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
       >
-        {image ? (
+        {c.image ? (
           <img
-            src={
-              image?.startsWith("data:") || image?.startsWith("http")
-                ? image
-                : `${BASE}${image}`
-            }
+            src={c.image}
             alt={c.name}
             loading="lazy"
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
@@ -121,7 +113,8 @@ export function CandyCard({ c, qty, onChange, mobile }) {
               bottom: 5, right: 5,
               background: "var(--gold2)",
               color: "#000",
-              width: mobile ? 26 : 30, height: mobile ? 26 : 30,
+              width: mobile ? 26 : 30,
+              height: mobile ? 26 : 30,
               borderRadius: "50%",
               display: "flex",
               alignItems: "center",
@@ -242,7 +235,7 @@ export default function ComboGrid({ candies = [], offers = [], selected = [], on
               textAlign: "center",
               padding: "40px 0",
               color: "var(--cream0)",
-              fontSize: mobile ? 14 : 16,
+              fontSize: 13,
             }}
           >
             No candies available for combos.
