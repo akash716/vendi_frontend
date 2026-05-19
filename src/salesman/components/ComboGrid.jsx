@@ -4,6 +4,24 @@ import useCandyImage from "../hooks/useCandyImage";
 
 const BASE = API_URL;
 
+// Fixed display order — matched by code
+const COMBO_ORDER = [
+  "MC1","MC2","MC3",      // Row 1: Creamy Milk, Crunchy Almond, Zesty Orange
+  "DC1","DC2",            // Row 2: 65% Dark, 70% Dark Zesty Orange
+  "DC3","DC4","DC5",      // Row 3: 72% No Sugar, 72% Almond Raisin, 85% Dark
+];
+
+function sortByFixedOrder(list) {
+  return [...list].sort((a, b) => {
+    const ai = COMBO_ORDER.indexOf(a.code);
+    const bi = COMBO_ORDER.indexOf(b.code);
+    if (ai === -1 && bi === -1) return 0;
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+}
+
 /* ── Candy Card ── */
 export function CandyCard({ c, qty, onChange, mobile }) {
   const outOfStock = (c.stock ?? 0) <= 0;
@@ -23,8 +41,21 @@ export function CandyCard({ c, qty, onChange, mobile }) {
         transition: "border-color .15s, box-shadow .15s",
       }}
     >
-      {/* Image */}
-      <div style={{ height: imgH, position: "relative", background: "var(--bg5)", flexShrink: 0 }}>
+      {/* Clickable image = ADD */}
+      <div
+        onClick={() => !outOfStock && onChange(c, "ADD")}
+        style={{
+          height: imgH,
+          position: "relative",
+          background: "var(--bg5)",
+          cursor: outOfStock ? "not-allowed" : "pointer",
+          WebkitTapHighlightColor: "transparent",
+        }}
+        onTouchStart={(e) => { if (!outOfStock) e.currentTarget.style.opacity = ".7"; }}
+        onTouchEnd={(e)   => { e.currentTarget.style.opacity = "1"; }}
+        onMouseEnter={(e) => { if (!outOfStock) e.currentTarget.style.opacity = ".85"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+      >
         {image ? (
           <img
             src={
@@ -55,8 +86,7 @@ export function CandyCard({ c, qty, onChange, mobile }) {
         <div
           style={{
             position: "absolute",
-            top: 5,
-            left: 5,
+            top: 5, left: 5,
             background: "rgba(0,0,0,.75)",
             color: "var(--gold3)",
             padding: "2px 7px",
@@ -72,8 +102,7 @@ export function CandyCard({ c, qty, onChange, mobile }) {
         <div
           style={{
             position: "absolute",
-            top: 5,
-            right: 5,
+            top: 5, right: 5,
             background: outOfStock ? "var(--red-bg)" : "var(--green-bg)",
             color: outOfStock ? "var(--red)" : "var(--green)",
             padding: "2px 7px",
@@ -85,6 +114,27 @@ export function CandyCard({ c, qty, onChange, mobile }) {
         >
           {outOfStock ? "OUT" : c.stock}
         </div>
+
+        {/* Qty bubble */}
+        {qty > 0 && (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 5, right: 5,
+              background: "var(--gold2)",
+              color: "var(--bg0)",
+              width: 22, height: 22,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: 800,
+              fontSize: 13,
+            }}
+          >
+            {qty}
+          </div>
+        )}
       </div>
 
       {/* Name */}
@@ -103,41 +153,44 @@ export function CandyCard({ c, qty, onChange, mobile }) {
         {c.name}
       </div>
 
-      {/* Controls */}
+      {/* Minus — only when qty > 0 */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: mobile ? 8 : 12,
-          padding: mobile ? "6px 8px 10px" : "8px 10px 12px",
+          minHeight: mobile ? 34 : 40,
+          padding: mobile ? "4px 8px 8px" : "4px 10px 10px",
         }}
       >
-        <button
-          onClick={() => onChange(c, "REMOVE")}
-          disabled={qty === 0}
-          style={ctrlBtn(qty === 0, "remove", mobile)}
-        >
-          −
-        </button>
-        <span
-          style={{
-            fontWeight: 800,
-            fontSize: mobile ? 14 : 16,
-            color: qty > 0 ? "var(--gold2)" : "var(--cream1)",
-            minWidth: 14,
-            textAlign: "center",
-          }}
-        >
-          {qty}
-        </span>
-        <button
-          onClick={() => onChange(c, "ADD")}
-          disabled={outOfStock}
-          style={ctrlBtn(outOfStock, "add", mobile)}
-        >
-          +
-        </button>
+        {qty > 0 ? (
+          <button
+            onClick={() => onChange(c, "REMOVE")}
+            style={{
+              width: mobile ? 28 : 34,
+              height: mobile ? 28 : 34,
+              borderRadius: mobile ? 7 : 10,
+              border: "none",
+              background: "var(--bg6)",
+              color: "var(--cream2)",
+              fontSize: mobile ? 16 : 20,
+              fontWeight: 700,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 0,
+              minHeight: "unset",
+              lineHeight: 1,
+            }}
+          >
+            −
+          </button>
+        ) : (
+          <span style={{ fontSize: 10, color: "var(--cream0)", opacity: 0.4 }}>
+            tap to add
+          </span>
+        )}
       </div>
     </div>
   );
@@ -155,27 +208,13 @@ export default function ComboGrid({ candies = [], offers = [], selected = [], on
     return s;
   }, [offers]);
 
-  const list = candies
-    .filter((c) =>
+  const list = sortByFixedOrder(
+    candies.filter((c) =>
       validPrices.size > 0
         ? validPrices.has(Number(c.price))
         : Number(c.price) <= 100
     )
-    .sort((a, b) =>
-      Number(a.price) !== Number(b.price)
-        ? Number(a.price) - Number(b.price)
-        : (a.code || "").localeCompare(b.code || "", undefined, { numeric: true })
-    );
-
-  const priceGroups = React.useMemo(() => {
-    const map = new Map();
-    list.forEach((c) => {
-      const key = Number(c.price);
-      if (!map.has(key)) map.set(key, []);
-      map.get(key).push(c);
-    });
-    return [...map.entries()];
-  }, [list]);
+  );
 
   const countOf = (id) => selected.filter((c) => c.id === id).length;
   const gap = mobile ? 8 : 12;
@@ -183,60 +222,22 @@ export default function ComboGrid({ candies = [], offers = [], selected = [], on
   return (
     <div style={{ maxWidth: mobile ? "100%" : 520 }}>
       <p style={{ marginBottom: 12, color: "var(--cream1)", fontSize: 12 }}>
-        Tap + / − to build your combo — applies automatically on completion.
+        Tap image to add · tap − to remove.
       </p>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: mobile ? 14 : 18 }}>
-        {priceGroups.map(([price, group]) => (
-          <div key={price}>
-            {/* Price group header */}
-            <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: "var(--gold3)",
-                  background: "rgba(200,132,42,.12)",
-                  border: "1px solid rgba(200,132,42,.2)",
-                  padding: "2px 10px",
-                  borderRadius: 99,
-                }}
-              >
-                ₹{price}
-              </span>
-              <div style={{ flex: 1, height: 1, background: "var(--border0)" }} />
-            </div>
-
-            {/* Cards */}
-            <div style={{ display: "flex", flexDirection: "column", gap }}>
-              {chunk(group, 3).map((row, rowIdx) => (
-                <div
-                  key={rowIdx}
-                  style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap }}
-                >
-                  {row.map((c) => (
-                    <CandyCard
-                      key={c.id}
-                      c={c}
-                      qty={countOf(c.id)}
-                      onChange={onChange}
-                      mobile={mobile}
-                    />
-                  ))}
-                  {/* Fill empty slots */}
-                  {row.length < 3 &&
-                    Array.from({ length: 3 - row.length }).map((_, i) => (
-                      <div key={`empty-${i}`} style={{ visibility: "hidden" }} />
-                    ))}
-                </div>
-              ))}
-            </div>
-          </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap }}>
+        {list.map((c) => (
+          <CandyCard
+            key={c.id}
+            c={c}
+            qty={countOf(c.id)}
+            onChange={onChange}
+            mobile={mobile}
+          />
         ))}
-
         {list.length === 0 && (
           <div
             style={{
+              gridColumn: "1/-1",
               textAlign: "center",
               padding: "40px 0",
               color: "var(--cream0)",
@@ -249,37 +250,4 @@ export default function ComboGrid({ candies = [], offers = [], selected = [], on
       </div>
     </div>
   );
-}
-
-/* ── Helpers ── */
-function chunk(arr, n) {
-  const out = [];
-  for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n));
-  return out;
-}
-
-function ctrlBtn(disabled, type, mobile) {
-  const size = mobile ? 28 : 34;
-  return {
-    width: size,
-    height: size,
-    borderRadius: mobile ? 7 : 10,
-    border: "none",
-    background: disabled
-      ? "var(--bg5)"
-      : type === "add"
-      ? "linear-gradient(135deg, var(--gold2), var(--gold3))"
-      : "var(--bg6)",
-    color: disabled ? "var(--cream0)" : type === "add" ? "var(--bg0)" : "var(--cream2)",
-    fontSize: mobile ? 16 : 20,
-    fontWeight: 700,
-    cursor: disabled ? "not-allowed" : "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 0,
-    minHeight: "unset",
-    lineHeight: 1,
-    transition: "background .15s",
-  };
 }
