@@ -55,132 +55,37 @@ export function CandyCard({ c, qty, onChange, mobile }) {
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         ) : (
-          <div
-            style={{
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "var(--cream0)",
-              fontSize: 11,
-            }}
-          >
+          <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--cream0)", fontSize: 11 }}>
             No Image
           </div>
         )}
 
-        {/* Price badge */}
-        <div
-          style={{
-            position: "absolute",
-            top: 5, left: 5,
-            background: "rgba(0,0,0,.75)",
-            color: "var(--gold3)",
-            padding: "2px 7px",
-            borderRadius: 5,
-            fontSize: 11,
-            fontWeight: 700,
-          }}
-        >
+        <div style={{ position: "absolute", top: 5, left: 5, background: "rgba(0,0,0,.75)", color: "var(--gold3)", padding: "2px 7px", borderRadius: 5, fontSize: 11, fontWeight: 700 }}>
           ₹{Number(c.price).toFixed(0)}
         </div>
 
-        {/* Stock badge */}
-        <div
-          style={{
-            position: "absolute",
-            top: 5, right: 5,
-            background: outOfStock ? "var(--red-bg)" : "var(--green-bg)",
-            color: outOfStock ? "var(--red)" : "var(--green)",
-            padding: "2px 7px",
-            borderRadius: 5,
-            fontSize: 10,
-            fontWeight: 600,
-            border: `1px solid ${outOfStock ? "var(--red-border)" : "var(--green-border)"}`,
-          }}
-        >
+        <div style={{ position: "absolute", top: 5, right: 5, background: outOfStock ? "var(--red-bg)" : "var(--green-bg)", color: outOfStock ? "var(--red)" : "var(--green)", padding: "2px 7px", borderRadius: 5, fontSize: 10, fontWeight: 600, border: `1px solid ${outOfStock ? "var(--red-border)" : "var(--green-border)"}` }}>
           {outOfStock ? "OUT" : c.stock}
         </div>
 
-        {/* Qty bubble */}
         {qty > 0 && (
-          <div
-            style={{
-              position: "absolute",
-              bottom: 5, right: 5,
-              background: "var(--gold2)",
-              color: "#000",
-              width: mobile ? 26 : 30,
-              height: mobile ? 26 : 30,
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 900,
-              fontSize: mobile ? 14 : 16,
-              boxShadow: "0 0 0 3px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.5)",
-              border: "2px solid rgba(255,255,255,.9)",
-              zIndex: 2,
-            }}
-          >
+          <div style={{ position: "absolute", bottom: 5, right: 5, background: "var(--gold2)", color: "#000", width: mobile ? 26 : 30, height: mobile ? 26 : 30, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: mobile ? 14 : 16, boxShadow: "0 0 0 3px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.5)", border: "2px solid rgba(255,255,255,.9)", zIndex: 2 }}>
             {qty}
           </div>
         )}
       </div>
 
-      {/* Name */}
-      <div
-        style={{
-          padding: mobile ? "6px 8px 2px" : "8px 10px 4px",
-          textAlign: "center",
-          fontWeight: 600,
-          fontSize,
-          color: "var(--cream4)",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-        }}
-      >
+      <div style={{ padding: mobile ? "6px 8px 2px" : "8px 10px 4px", textAlign: "center", fontWeight: 600, fontSize, color: "var(--cream4)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
         {c.name}
       </div>
 
-      {/* Minus */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: mobile ? 34 : 40,
-          padding: mobile ? "4px 8px 8px" : "4px 10px 10px",
-        }}
-      >
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: mobile ? 34 : 40, padding: mobile ? "4px 8px 8px" : "4px 10px 10px" }}>
         {qty > 0 ? (
-          <button
-            onClick={() => onChange(c, "REMOVE")}
-            style={{
-              width: mobile ? 28 : 34,
-              height: mobile ? 28 : 34,
-              borderRadius: mobile ? 7 : 10,
-              border: "none",
-              background: "var(--bg6)",
-              color: "var(--cream2)",
-              fontSize: mobile ? 16 : 20,
-              fontWeight: 700,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 0,
-              minHeight: "unset",
-              lineHeight: 1,
-            }}
-          >
+          <button onClick={() => onChange(c, "REMOVE")} style={{ width: mobile ? 28 : 34, height: mobile ? 28 : 34, borderRadius: mobile ? 7 : 10, border: "none", background: "var(--bg6)", color: "var(--cream2)", fontSize: mobile ? 16 : 20, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, minHeight: "unset", lineHeight: 1 }}>
             −
           </button>
         ) : (
-          <span style={{ fontSize: 10, color: "var(--cream0)", opacity: 0.4 }}>
-            tap to add
-          </span>
+          <span style={{ fontSize: 10, color: "var(--cream0)", opacity: 0.4 }}>tap to add</span>
         )}
       </div>
     </div>
@@ -207,38 +112,52 @@ export default function ComboGrid({ candies = [], offers = [], selected = [], on
     )
   );
 
+  // Price ke hisaab se group karo
+  const groups = React.useMemo(() => {
+    const map = new Map();
+    list.forEach((c) => {
+      const p = Number(c.price);
+      if (!map.has(p)) map.set(p, []);
+      map.get(p).push(c);
+    });
+    return [...map.entries()].sort((a, b) => a[0] - b[0]); // [[65, [...]], [80, [...]]]
+  }, [list]);
+
   const countOf = (id) => selected.filter((c) => c.id === id).length;
   const gap = mobile ? 8 : 12;
 
+  if (list.length === 0) {
+    return (
+      <div style={{ maxWidth: mobile ? "100%" : 520 }}>
+        <p style={{ marginBottom: 12, color: "var(--cream1)", fontSize: 12 }}>Tap image to add · tap − to remove.</p>
+        <div style={{ textAlign: "center", padding: "40px 0", color: "var(--cream0)", fontSize: 13 }}>No candies available for combos.</div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ maxWidth: mobile ? "100%" : 520 }}>
-      <p style={{ marginBottom: 12, color: "var(--cream1)", fontSize: 12 }}>
-        Tap image to add · tap − to remove.
-      </p>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap }}>
-        {list.map((c) => (
-          <CandyCard
-            key={c.id}
-            c={c}
-            qty={countOf(c.id)}
-            onChange={onChange}
-            mobile={mobile}
-          />
-        ))}
-        {list.length === 0 && (
-          <div
-            style={{
-              gridColumn: "1/-1",
-              textAlign: "center",
-              padding: "40px 0",
-              color: "var(--cream0)",
-              fontSize: 13,
-            }}
-          >
-            No candies available for combos.
+      <p style={{ marginBottom: 12, color: "var(--cream1)", fontSize: 12 }}>Tap image to add · tap − to remove.</p>
+
+      {groups.map(([price, items], gi) => (
+        <div key={price}>
+          {/* Price divider — sirf multiple groups ho toh */}
+          {groups.length > 1 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, marginTop: gi > 0 ? 14 : 0 }}>
+              <div style={{ height: 1, flex: 1, background: "var(--border1)" }} />
+              <span style={{ fontSize: 11, color: "var(--gold3)", fontWeight: 700, background: "rgba(200,132,42,.12)", padding: "2px 10px", borderRadius: 99, border: "1px solid rgba(200,132,42,.25)" }}>
+                ₹{price}
+              </span>
+              <div style={{ height: 1, flex: 1, background: "var(--border1)" }} />
+            </div>
+          )}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap, marginBottom: gi < groups.length - 1 ? 0 : 0 }}>
+            {items.map((c) => (
+              <CandyCard key={c.id} c={c} qty={countOf(c.id)} onChange={onChange} mobile={mobile} />
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }
