@@ -4,9 +4,15 @@ import useCandyImage from "../hooks/useCandyImage";
 
 const BASE = API_URL;
 
-// Sort by sort_order field from DB
+// Sort by price first (asc), then by id (asc)
+// ₹65 wale pehle: id1,2,3,4,5 → Row1+Row2
+// ₹80 wale baad: id6,7,8 → Row3
 function sortByFixedOrder(list) {
-  return [...list].sort((a, b) => (a.sort_order ?? 99) - (b.sort_order ?? 99));
+  return [...list].sort((a, b) => {
+    const priceDiff = Number(a.price) - Number(b.price);
+    if (priceDiff !== 0) return priceDiff;
+    return a.id - b.id;
+  });
 }
 
 /* ── Candy Card ── */
