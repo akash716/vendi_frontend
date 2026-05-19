@@ -1,16 +1,16 @@
 import React from "react";
 
-// Hardcoded order by DB id:
-// Row 1: id1, id2, id3  → Creamy Milk, Crunchy Almond, Zesty Orange (₹65)
-// Row 2: id4, id5       → 65% Dark, 70% Dark Zesty (₹65)
-// Row 3: id6, id7, id8  → 72% No Sugar, 72% Almond Raisin, 85% Dark (₹80)
-const ID_ORDER = [1, 2, 3, 4, 5, 6, 7, 8];
+const NAME_ORDER = [
+  "Creamy Milk", "Crunchy Almond", "Zesty Orange",
+  "65% Dark", "70% Dark Zesty",
+  "72% No Sugar", "72% Almond Raisin", "85% Dark"
+];
 
 function sortByFixedOrder(list) {
   return [...list].sort((a, b) => {
-    const ai = ID_ORDER.indexOf(Number(a.id));
-    const bi = ID_ORDER.indexOf(Number(b.id));
-    if (ai === -1 && bi === -1) return Number(a.id) - Number(b.id);
+    const ai = NAME_ORDER.indexOf(a.name);
+    const bi = NAME_ORDER.indexOf(b.name);
+    if (ai === -1 && bi === -1) return 0;
     if (ai === -1) return 1;
     if (bi === -1) return -1;
     return ai - bi;
@@ -35,7 +35,6 @@ export function CandyCard({ c, qty, onChange, mobile }) {
         transition: "border-color .15s, box-shadow .15s",
       }}
     >
-      {/* Clickable image = ADD */}
       <div
         onClick={() => !outOfStock && onChange(c, "ADD")}
         style={{
@@ -72,7 +71,6 @@ export function CandyCard({ c, qty, onChange, mobile }) {
           </div>
         )}
 
-        {/* Price badge */}
         <div
           style={{
             position: "absolute",
@@ -88,7 +86,6 @@ export function CandyCard({ c, qty, onChange, mobile }) {
           ₹{Number(c.price).toFixed(0)}
         </div>
 
-        {/* Stock badge */}
         <div
           style={{
             position: "absolute",
@@ -105,7 +102,6 @@ export function CandyCard({ c, qty, onChange, mobile }) {
           {outOfStock ? "OUT" : c.stock}
         </div>
 
-        {/* Qty bubble */}
         {qty > 0 && (
           <div
             style={{
@@ -131,7 +127,6 @@ export function CandyCard({ c, qty, onChange, mobile }) {
         )}
       </div>
 
-      {/* Name */}
       <div
         style={{
           padding: mobile ? "6px 8px 2px" : "8px 10px 4px",
@@ -147,7 +142,6 @@ export function CandyCard({ c, qty, onChange, mobile }) {
         {c.name}
       </div>
 
-      {/* Minus — only when qty > 0 */}
       <div
         style={{
           display: "flex",
@@ -192,6 +186,10 @@ export function CandyCard({ c, qty, onChange, mobile }) {
 
 /* ── Combo Grid ── */
 export default function ComboGrid({ candies = [], offers = [], selected = [], onChange, mobile }) {
+
+  // 👇 DEBUG — console mein output dekho, baad mein hatana
+  console.log("candies:", candies.map(c => ({ id: c.id, name: c.name, image: c.image })));
+
   const validPrices = React.useMemo(() => {
     const s = new Set();
     offers.forEach((o) => {
