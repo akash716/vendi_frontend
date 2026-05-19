@@ -14,12 +14,121 @@ function StatCard({ label, value, color, bg, border }) {
   );
 }
 
+/* ── Bill Items Modal ── */
+function BillItemsModal({ bill, stallId, onClose }) {
+  const [items,   setItems]   = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res  = await fetch(`${API}/${stallId}/sale/${bill.id}/items`);
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error);
+        setItems(json);
+      } catch(err) { alert("Failed: "+err.message); onClose(); }
+      finally { setLoading(false); }
+    })();
+  }, [bill.id, stallId]);
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div onClick={onClose} style={{
+        position:"fixed", inset:0, background:"rgba(0,0,0,.6)", zIndex:1000,
+      }}/>
+
+      {/* Modal card */}
+      <div style={{
+        position:"fixed", bottom:0, left:0, right:0, zIndex:1001,
+        background:"var(--bg2)", borderRadius:"18px 18px 0 0",
+        border:"1px solid var(--border1)", borderBottom:"none",
+        maxHeight:"70vh", overflowY:"auto",
+        boxShadow:"0 -12px 50px rgba(0,0,0,.7)",
+        padding:"0 0 40px",
+      }} onClick={e => e.stopPropagation()}>
+
+        {/* Handle */}
+        <div style={{ padding:"12px 0 0", display:"flex", justifyContent:"center" }}>
+          <div style={{ width:36, height:4, borderRadius:99, background:"var(--border2)" }}/>
+        </div>
+
+        {/* Header */}
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 16px 12px" }}>
+          <div>
+            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18, fontWeight:700, color:"var(--cream4)" }}>
+              Bill #{bill.id}
+            </div>
+            <div style={{ fontSize:11, color:"var(--cream0)", marginTop:2 }}>{fmtDate(bill.created_at)}</div>
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <div style={{ fontWeight:800, fontSize:16, color:"var(--green)" }}>₹{fmt(bill.total)}</div>
+            <button onClick={onClose} style={{
+              background:"var(--bg5)", border:"1px solid var(--border1)",
+              width:30, height:30, borderRadius:"50%",
+              color:"var(--cream1)", fontSize:13, cursor:"pointer",
+              display:"flex", alignItems:"center", justifyContent:"center",
+              padding:0, minHeight:"unset",
+            }}>✕</button>
+          </div>
+        </div>
+
+        <div style={{ height:1, background:"var(--border0)", margin:"0 16px 12px" }}/>
+
+        {/* Items */}
+        <div style={{ padding:"0 16px" }}>
+          {loading ? (
+            <div style={{ textAlign:"center", padding:"24px 0", color:"var(--cream0)", fontSize:13 }}>
+              🍫 Loading items…
+            </div>
+          ) : items && items.length === 0 ? (
+            <div style={{ textAlign:"center", padding:"24px 0", color:"var(--cream0)", fontSize:13 }}>
+              No items found
+            </div>
+          ) : (
+            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+              {items && items.map((item, idx) => (
+                <div key={idx} style={{
+                  display:"flex", justifyContent:"space-between", alignItems:"center",
+                  padding:"10px 12px", borderRadius:10,
+                  background: item.type==="COMBO" ? "var(--bg5)" : "var(--bg3)",
+                  border: `1px solid ${item.type==="COMBO" ? "var(--border2)" : "var(--border0)"}`,
+                }}>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    {item.type === "COMBO" && (
+                      <span style={{
+                        fontSize:9, fontWeight:700, color:"var(--gold3)",
+                        background:"rgba(200,132,42,.15)", borderRadius:4,
+                        padding:"2px 5px", marginRight:6, textTransform:"uppercase", letterSpacing:"0.06em",
+                      }}>Combo</span>
+                    )}
+                    <span style={{ fontSize:13, color:"var(--cream4)", fontWeight:600 }}>
+                      {item.candy_name}
+                    </span>
+                    {item.qty > 1 && (
+                      <span style={{ fontSize:11, color:"var(--cream0)", marginLeft:6 }}>×{item.qty}</span>
+                    )}
+                  </div>
+                  <div style={{ fontSize:13, fontWeight:700, color:"var(--green)", marginLeft:8 }}>
+                    ₹{fmt(item.display_price)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function SalesmanProfile({ stallId, onClose }) {
-  const [data,       setData]       = useState(null);
-  const [loading,    setLoading]    = useState(true);
-  const [deletingId, setDeletingId] = useState(null);
-  const [startY,     setStartY]     = useState(null);
-  const [translateY, setTranslateY] = useState(0);
+  const [data,         setData]         = useState(null);
+  const [loading,      setLoading]      = useState(true);
+  const [deletingId,   setDeletingId]   = useState(null);
+  const [startY,       setStartY]       = useState(null);
+  const [translateY,   setTranslateY]   = useState(0);
+  const [viewingBill,  setViewingBill]  = useState(null); // eye button
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -152,10 +261,10 @@ export default function SalesmanProfile({ stallId, onClose }) {
 
                 <div style={{ height:1, background:"var(--border0)", margin:"0 0 14px" }}/>
 
-                {/* Recent bills */}
+                {/* All bills */}
                 <div>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
-                    <div style={secLabel}>🧾 Recent Bills</div>
+                    <div style={secLabel}>🧾 All Bills ({recentBills.length})</div>
                     <button onClick={load} style={{ background:"none", border:"none", color:"var(--cream0)", fontSize:13, cursor:"pointer", padding:0, minHeight:"unset" }}>
                       ↻ Refresh
                     </button>
@@ -179,10 +288,27 @@ export default function SalesmanProfile({ stallId, onClose }) {
                               {fmtDate(bill.created_at)}
                             </div>
                           </div>
-                          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                             <div style={{ fontWeight:800, fontSize:15, color:"var(--green)" }}>
                               ₹{fmt(bill.total)}
                             </div>
+
+                            {/* 👁 Eye button — bill items dikhata hai */}
+                            <button
+                              onClick={() => setViewingBill(bill)}
+                              title="Bill items dekho"
+                              style={{
+                                padding:"5px 9px", borderRadius:8, border:"1px solid var(--border1)",
+                                minHeight:"unset",
+                                background:"var(--bg5)",
+                                color:"var(--cream2)",
+                                cursor:"pointer",
+                                fontWeight:700, fontSize:13,
+                                display:"flex", alignItems:"center", justifyContent:"center",
+                              }}>
+                              👁
+                            </button>
+
                             <button onClick={() => voidSale(bill.id)} disabled={deletingId===bill.id}
                               style={{
                                 padding:"5px 10px", borderRadius:8, border:"none", minHeight:"unset",
@@ -204,6 +330,15 @@ export default function SalesmanProfile({ stallId, onClose }) {
           })()}
         </div>
       </div>
+
+      {/* Bill Items Modal — eye button se open hota hai */}
+      {viewingBill && (
+        <BillItemsModal
+          bill={viewingBill}
+          stallId={stallId}
+          onClose={() => setViewingBill(null)}
+        />
+      )}
     </>
   );
 }
