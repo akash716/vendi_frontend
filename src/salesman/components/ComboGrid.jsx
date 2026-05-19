@@ -205,7 +205,7 @@ export default function ComboGrid({ candies = [], offers = [], selected = [], on
         : Number(c.price) <= 100
     )
   );
-
+console.log("after sort:", list.map(c => c.id + " " + c.name));
   const countOf = (id) => selected.filter((c) => c.id === id).length;
   const gap = mobile ? 8 : 12;
 
